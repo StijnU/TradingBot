@@ -15,7 +15,7 @@ class Agent:
             self.comment = comment
             self.depth = depth
             
-            # Action space from 0 to 3, 0 is hold, 1 is buy, 2 is sell
+            # Action space from 0 to 2, 0 is hold, 1 is buy, 2 is sell
             self.action_space = np.array([0, 1, 2])
 
             # folder to save models
@@ -32,6 +32,9 @@ class Agent:
 
             # Create shared Actor-Critic network model
             self.Actor = self.Critic = Shared_Model(input_shape=self.state_size, action_space = self.action_space.shape[0], lr=self.lr, optimizer = self.optimizer, model=self.model)
+    
+    def save_df(self, env, name='train_data'):
+        env.df.to_csv(self.log_name+'_'+name+'.csv')
 
     # create tensorboard writer
     def create_writer(self, initial_balance, normalize_value, train_episodes):

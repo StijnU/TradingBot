@@ -1,4 +1,5 @@
 from collections import deque
+from os import name
 import time
 import numpy as np
 
@@ -6,6 +7,7 @@ def train_agent(env, agent, visualize=False, train_episodes = 50, training_batch
     agent.create_writer(env.initial_balance, env.normalize_value, train_episodes) # create TensorBoard writer
     total_average = deque(maxlen=100) # save recent 100 episodes net worth
     best_average = 0 # used to track best average net worth
+    agent.save_df(env, 'train_data') #save dataframe in agent folder
     for episode in range(train_episodes):
         start_time = time.time()
 
@@ -37,12 +39,12 @@ def train_agent(env, agent, visualize=False, train_episodes = 50, training_batch
         if episode > len(total_average):
             if best_average < average:
                 best_average = average
-                print("Saving model")
                 agent.save(score="{:.2f}".format(best_average), args=[episode, average, env.episode_orders, a_loss, c_loss])
             agent.save()
                     
-def test_agent(env, agent, test_episodes=10, folder="", name="Crypto_trader", comment=""):
+def test_agent(env, agent, test_episodes=10, folder="", name="", comment=""):
     agent.load(folder, name)
+    agent.save_df(env, 'test_data')
     average_net_worth = 0
     average_orders = 0
     no_profit_episodes = 0
