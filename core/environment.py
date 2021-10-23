@@ -20,10 +20,13 @@ class TradingEnv:
     Attr render_range: Int
         the range for rendering the trading graph
     """
-    def __init__(self, df, df_normalized, initial_balance=1000, lookback_window_size=50, Render_range=100, Show_reward=False, Show_indicators=False, normalize_value=40000):
+    def __init__(self, train_df, train_df_normalized, test_df, test_df_normalized, initial_balance=1000, lookback_window_size=50, Render_range=100, Show_reward=False, Show_indicators=False, normalize_value=40000):
         # Define action space and state size and other custom parameters
-        self.df = df.reset_index()#.reset_index()#.dropna().copy().reset_index()
-        self.df_normalized = df_normalized.reset_index()#.reset_index()#.copy().dropna().reset_index()
+        self.df = train_df.reset_index()#.reset_index()#.dropna().copy().reset_index()
+        self.df_normalized = train_df_normalized.reset_index()#.reset_index()#.copy().dropna().reset_index()
+        self.test_df = test_df.reset_index() #test df is given so we can save it for later testing
+        self.test_df_normalized = test_df_normalized.reset_index() # not sure if this is needed
+
         self.df_total_steps = len(self.df)-1
         self.initial_balance = initial_balance
         self.lookback_window_size = lookback_window_size

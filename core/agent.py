@@ -9,7 +9,7 @@ from core.model import Shared_Model
 
 
 class Agent:
-    def __init__(self, name, lookback_window_size=50, lr=0.00005, epochs=1, optimizer=Adam, batch_size=32, model="", depth=0, comment=""):
+    def __init__(self, market, name, lookback_window_size=50, lr=0.00005, epochs=1, optimizer=Adam, batch_size=32, model="", depth=0, comment=""):
             self.lookback_window_size = lookback_window_size
             self.model = model
             self.comment = comment
@@ -20,6 +20,10 @@ class Agent:
 
             # folder to save models
             self.log_name = "trained_bots/"+name
+            self.name = name
+
+            # market name for logging
+            self.market = market
             
             # State size contains Market+Orders+Indicators history for the last lookback_window_size steps
             self.state_size = (lookback_window_size, 5+depth) # 5 standard OHCL information + market and indicators
@@ -33,8 +37,9 @@ class Agent:
             # Create shared Actor-Critic network model
             self.Actor = self.Critic = Shared_Model(input_shape=self.state_size, action_space = self.action_space.shape[0], lr=self.lr, optimizer = self.optimizer, model=self.model)
     
-    def save_df(self, env, name='train_data'):
-        env.df.to_csv(self.log_name+'_'+name+'.csv')
+    def save_df(self, env):
+        env.df.to_csv(self.log_name+'/train.csv')
+        env.test_df.to_csv(self.log_name+'/test.csv')
 
     # create tensorboard writer
     def create_writer(self, initial_balance, normalize_value, train_episodes):
@@ -51,6 +56,7 @@ class Agent:
         # save training parameters to Parameters.json file for future
         current_date = datetime.now().strftime('%Y-%m-%d %H:%M')
         params = {
+            "market": self.market,
             "training start": current_date,
             "initial balance": initial_balance,
             "training episodes": train_episodes,
@@ -62,9 +68,6 @@ class Agent:
             "normalize value": normalize_value,
             "model": self.model,
             "comment": self.comment,
-            "saving time": "",
-            "Actor name": "",
-            "Critic name": "",
         }
         with open(self.log_name+"/Parameters.json", "w") as write_file:
             json.dump(params, write_file, indent=4)
@@ -121,7 +124,7 @@ class Agent:
         action = np.random.choice(self.action_space, p=prediction)
         return action, prediction
         
-    def save(self, name="Crypto_trader", score="", args=[]):
+    def save(self, name="", score="", args=[]):
         if not os.path.exists(self.log_name+"/models"):
             os.makedirs(self.log_name+"/models")
         # save keras model weights
@@ -149,8 +152,13 @@ class Agent:
 
     def load(self, folder, name):
         # load keras model weights
+        print(os.path.join(folder, f"{name}_Actor.h5"))
         self.Actor.Actor.load_weights(os.path.join(folder, f"{name}_Actor.h5"))
         self.Critic.Critic.load_weights(os.path.join(folder, f"{name}_Critic.h5"))
+
+    def save_test_data(self, data):
+        with open(self.log_name+'/test_results.json', "w") as write_file:
+            json.dump(write_file, data, indent=4)
   
 
 

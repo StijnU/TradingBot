@@ -7,7 +7,7 @@ def train_agent(env, agent, visualize=False, train_episodes = 50, training_batch
     agent.create_writer(env.initial_balance, env.normalize_value, train_episodes) # create TensorBoard writer
     total_average = deque(maxlen=100) # save recent 100 episodes net worth
     best_average = 0 # used to track best average net worth
-    agent.save_df(env, 'train_data') #save dataframe in agent folder
+    agent.save_df(env) #save dataframe in agent folder
     for episode in range(train_episodes):
         start_time = time.time()
 
@@ -26,7 +26,7 @@ def train_agent(env, agent, visualize=False, train_episodes = 50, training_batch
             predictions.append(prediction)
             state = next_state
 
-            time.sleep(0.7)
+            # time.sleep(0.7)
 
         a_loss, c_loss = agent.replay(states, actions, rewards, predictions, dones, next_states)
         total_average.append(env.net_worth)
@@ -36,15 +36,15 @@ def train_agent(env, agent, visualize=False, train_episodes = 50, training_batch
         agent.writer.add_scalar('Data/episode_orders', env.episode_orders, episode)
         stop_time = (time.time() - start_time)
         print("episode: {:<5} net worth {:<7.2f} average: {:<7.2f} orders: {}, and took: {} seconds to complete".format(episode, env.net_worth, average, env.episode_orders, stop_time))
-        if episode > len(total_average):
+        if episode > 0:
             if best_average < average:
                 best_average = average
-                agent.save(score="{:.2f}".format(best_average), args=[episode, average, env.episode_orders, a_loss, c_loss])
+                agent.save(name=agent.name, score="{:.2f}".format(best_average), args=[episode, average, env.episode_orders, a_loss, c_loss])
             agent.save()
                     
 def test_agent(env, agent, test_episodes=10, folder="", name="", comment=""):
     agent.load(folder, name)
-    agent.save_df(env, 'test_data')
+    agent.save_df(env)
     average_net_worth = 0
     average_orders = 0
     no_profit_episodes = 0

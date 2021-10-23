@@ -25,12 +25,13 @@ train_df = df[:-test_window-lookback_window_size] # we leave 100 to have properl
 test_df = df[-test_window-lookback_window_size:]
 
 # split training and testing normalized datasets
-train_df_nomalized = df_normalized[:-test_window-lookback_window_size] # we leave 100 to have properly calculated indicators
-test_df_nomalized = df_normalized[-test_window-lookback_window_size:]
+train_df_normalized = df_normalized[:-test_window-lookback_window_size] # we leave 100 to have properly calculated indicators
+test_df_normalized = df_normalized[-test_window-lookback_window_size:]
 
 # single processing training
 agent = Agent(
-    name=market_name+'_Training',
+    name=market_name_log+'_Training',
+    market=market_name,
     lookback_window_size=lookback_window_size, 
     lr=0.00001, 
     depth=depth, 
@@ -40,14 +41,10 @@ agent = Agent(
     model="CNN")
 
 train_env = TradingEnv(
-    df=train_df, 
-    df_normalized=train_df_nomalized, 
+    train_df=train_df, 
+    train_df_normalized=train_df_normalized,
+    test_df=test_df,
+    test_df_normalized=test_df_normalized, 
     lookback_window_size=lookback_window_size)
-
-#limit resources for training (required to run on ulyssis server)
-#def set_max_runtime(seconds):
-#    resource.setrlimit(resource.RLIMIT_CPU, (seconds, seconds))
-
-#set_max_runtime(20)
 
 train_agent(train_env, agent, visualize=False, train_episodes=10000, training_batch_size=100)
